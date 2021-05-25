@@ -97,28 +97,24 @@ void loop() {
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.printf("\nHandling command message on topic: %s\n", topic);
   String switchTopic = "kp1/" + APP_VERSION + "/cex/" + TOKEN + "/command/SWITCH/status";
-  String eshghTopic = "kp1/" + APP_VERSION + "/cex/" + TOKEN + "/command/ESHGH/status";
-  
-  if(strcmp(topic,switchTopic.c_str())==0)
-  {
-    Serial.println("switchTopic is runing");
-    DynamicJsonDocument doc(1023);
-    deserializeJson(doc, payload, length);
-    JsonVariant json_var = doc.as<JsonVariant>();
+  Serial.println("switchTopic is runing");
+  DynamicJsonDocument doc(1023);
+  deserializeJson(doc, payload, length);
+  JsonVariant json_var = doc.as<JsonVariant>();
     
-    DynamicJsonDocument telemetry(1023);
-    telemetry.createNestedObject();
+  DynamicJsonDocument telemetry(1023);
+  telemetry.createNestedObject();
   
-    const char* lampState = json_var[0]["payload"]["lampState"].as<char*>();
-    const char* fanState = json_var[0]["payload"]["fanState"].as<char*>();
-    const char* heaterState = json_var[0]["payload"]["heaterState"].as<char*>();
-    const char* isAutomate = json_var[0]["payload"]["isAutomate"].as<char*>();
+  const char* lampState = json_var[0]["payload"]["lampState"].as<char*>();
+  const char* fanState = json_var[0]["payload"]["fanState"].as<char*>();
+  const char* heaterState = json_var[0]["payload"]["heaterState"].as<char*>();
+  const char* isAutomate = json_var[0]["payload"]["isAutomate"].as<char*>();
    
-   if(strcmp(lampState,ON) == 0){
+  if(strcmp(lampState,ON) == 0){
      digitalWrite(LAMP,HIGH);
      telemetry[0]["Lamp"] = 1;
      Serial.println("lamp roshan");
-   }else if(strcmp(lampState,OFF) == 0){
+  }else if(strcmp(lampState,OFF) == 0){
      digitalWrite(LAMP,LOW);
      telemetry[0]["Lamp"] = 0;
      Serial.println("lamp khamush");
@@ -136,10 +132,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
    }else{
      Serial.println(fanState);
    }
-     if(strcmp(heaterState,ON) == 0){
-     digitalWrite(HEATER,HIGH);
-     telemetry[0]["Heater"] = 1;
-     Serial.println("HEATER roshan");
+   if(strcmp(heaterState,ON) == 0){
+    digitalWrite(HEATER,HIGH);
+    telemetry[0]["Heater"] = 1;
+    Serial.println("HEATER roshan");
    }else if(strcmp(heaterState,OFF) == 0){
      digitalWrite(HEATER,LOW);
      telemetry[0]["Heater"] = 0;
@@ -167,34 +163,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     commandResponse[i]["statusCode"] = 200;
     commandResponse[i]["payload"] = "done";
   }
-  String topic = "kp1/" + APP_VERSION + "/dcx/" + TOKEN + "/json";
-  client.publish(topic.c_str(), telemetry.as<String>().c_str());
+  String telemetryTopic = "kp1/" + APP_VERSION + "/dcx/" + TOKEN + "/json";
+  client.publish(telemetryTopic.c_str(), telemetry.as<String>().c_str());
 
   String responseTopic = "kp1/" + APP_VERSION + "/cex/" + TOKEN + "/result/SWITCH";
   client.publish(responseTopic.c_str(), commandResponse.as<String>().c_str());
   Serial.println("Published response to SWITCH command on topic: " + responseTopic);
-    }else if(strcmp(topic,eshghTopic.c_str())==0)
-   {
-    Serial.println("ESHGHTopic is runing");
-    DynamicJsonDocument doc(1023);
-    deserializeJson(doc, payload, length);
-  JsonVariant json_var = doc.as<JsonVariant>();
-  DynamicJsonDocument commandResponse(1023);
-  for (int i = 0; i < json_var.size(); i++) {
-    unsigned int command_id = json_var[i]["id"].as<unsigned int>();
-    commandResponse.createNestedObject();
-    commandResponse[i]["id"] = command_id;
-    commandResponse[i]["statusCode"] = 200;
-    commandResponse[i]["payload"] = "done";
-  }
-
-  String responseTopic = "kp1/" + APP_VERSION + "/cex/" + TOKEN + "/result/ESHGH";
-  client.publish(responseTopic.c_str(), commandResponse.as<String>().c_str());
-  Serial.println("Published response to ESHGH command on topic: " + responseTopic);
-    
-    }
-
-  
 }
 
 void setup_wifi() {
@@ -238,12 +212,10 @@ void reconnect() {
 
 void subscribeToCommand() {
   String topic1 = "kp1/" + APP_VERSION + "/cex/" + TOKEN + "/command/SWITCH/status";
-  String topic2 = "kp1/" + APP_VERSION + "/cex/" + TOKEN + "/command/ESHGH/status";
   client.subscribe(topic1.c_str());
-  client.subscribe(topic2.c_str());
   Serial.println("Subscribed on topic: " + topic1);
-  Serial.println("Subscribed on topic: " + topic2);
 }
+
 void setDeafaultState(){
     DynamicJsonDocument telemetry(1023);
     telemetry.createNestedObject();
